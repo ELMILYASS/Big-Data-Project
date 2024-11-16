@@ -1,0 +1,2 @@
+2024/11/16 12:53:26|ADD_TO_CART_OUTSIDE|Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0|Mens Casual Premium Slim Fit T-Shirts |22.3|/C:/Users/HP/Desktop/BigData-Project/frontend/index.html
+2024/11/16 12:53:26|HOVER_PRODUCT|Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Edg/130.0.0.0|Mens Casual Premium Slim Fit T-Shirts |undefined|/C:/Users/HP/Desktop/BigData-Project/frontend/index.html

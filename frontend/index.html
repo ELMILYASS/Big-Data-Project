@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-Commerce Store</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>E-Commerce Store</h1>
+      </header>
+      <main>
+        <div id="loading" class="loading">Loading products...</div>
+        <div id="product-list" class="product-list"></div>
+      </main>
+    </div>
+
+    <!-- Product Details Popup -->
+    <div id="product-modal" class="modal">
+      <div class="modal-content">
+        <span id="close-modal" class="close">&times;</span>
+        <div class="modal-body">
+          <img id="modal-image" src="" alt="Product Image" />
+          <div class="modal-details">
+            <h2 id="modal-title"></h2>
+            <p id="modal-description"></p>
+            <p><strong>Price:</strong> $<span id="modal-price"></span></p>
+            <button id="modal-add-to-cart">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
