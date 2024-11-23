@@ -7,19 +7,31 @@ const modalDescription = document.getElementById("modal-description");
 const modalPrice = document.getElementById("modal-price");
 const modalAddToCart = document.getElementById("modal-add-to-cart");
 const closeModal = document.getElementById("close-modal");
-const API_URL = "https://fakestoreapi.com/products";
+const API_CLOTHES_URL = "https://fakestoreapi.com/products";
+const API_BOOKS_URL = "https://openlibrary.org/subjects/fantasy.json?limit=10";
 
 let currentProduct = null;
+let currentRoute = "Clothes";
+
+document.getElementById("clothes-button").addEventListener("click", () => {
+  currentRoute = "Clothes";
+  fetchProducts(API_CLOTHES_URL);
+});
+
+document.getElementById("books-button").addEventListener("click", () => {
+  currentRoute = "Books";
+  fetchBooks();
+});
 
 /**
  * Log an event to the backend
  */
-function logEvent(action, details) {
+function logEvent(action, details, route) {
   const event = {
     action,
     ...details,
-    route: window.location.pathname,
-    agent: navigator.userAgent,
+    route: route,
+    agent: getBrowserName(),
   };
   console.log("event ", event);
   fetch("http://localhost:3000/logs", {
@@ -27,6 +39,30 @@ function logEvent(action, details) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(event),
   }).catch((error) => console.error("Error logging event:", error));
+}
+
+/**
+ * Get Browser name
+ */ function getBrowserName() {
+  const userAgent = navigator.userAgent;
+  let browserName;
+
+  if (userAgent.indexOf("Chrome") > -1) {
+    browserName = "Chrome";
+  } else if (userAgent.indexOf("Firefox") > -1) {
+    browserName = "Firefox";
+  } else if (userAgent.indexOf("Safari") > -1) {
+    browserName = "Safari";
+  } else if (
+    userAgent.indexOf("MSIE") > -1 ||
+    userAgent.indexOf("Trident") > -1
+  ) {
+    browserName = "Internet Explorer";
+  } else {
+    browserName = "Unknown";
+  }
+
+  return browserName;
 }
 
 /**
@@ -39,18 +75,29 @@ function renderProducts(products) {
     productDiv.classList.add("product");
 
     productDiv.innerHTML = `
-            <img src="${product.image}" alt="${product.title}">
+            <img src="${product.image || product.cover}" alt="${product.title}">
             <h4>${product.title}</h4>
-            <p>$${product.price.toFixed(2)}</p>
-            <button>Add to Cart</button>
+            <p>${
+              product.price
+                ? "$" + product.price.toFixed(2)
+                : "No price available"
+            }</p>
+            <button>Buy</button>
         `;
 
     let hoverTimeout = null;
 
-    // Hover event (after 1 seconds)
+    // Hover event (after 1 second)
     productDiv.addEventListener("mouseenter", () => {
       hoverTimeout = setTimeout(() => {
-        logEvent("HOVER_PRODUCT", { product: product.title });
+        logEvent(
+          `HOVER`,
+          {
+            product: product.title,
+            price: product.price,
+          },
+          currentRoute + " home"
+        );
       }, 1000);
     });
 
@@ -58,19 +105,30 @@ function renderProducts(products) {
       clearTimeout(hoverTimeout);
     });
 
-    // Add to Cart button event (outside product details)
+    // Buy button event (home page)
     productDiv.querySelector("button").addEventListener("click", (e) => {
       e.stopPropagation();
-      logEvent("ADD_TO_CART_OUTSIDE", {
-        product: product.title,
-        price: product.price,
-      });
+      logEvent(
+        `BUY`,
+        {
+          product: product.title,
+          price: product.price,
+        },
+        currentRoute + " home"
+      );
       alert(`${product.title} added to cart!`);
     });
 
     // Product click event for details
     productDiv.addEventListener("click", () => {
-      logEvent("ENTER_PRODUCT_DETAILS", { product: product.title });
+      logEvent(
+        `ENTER_PRODUCT_DETAILS`,
+        {
+          product: product.title,
+          price: product.price,
+        },
+        currentRoute + " details"
+      );
       showProductDetails(product);
     });
 
@@ -83,10 +141,11 @@ function renderProducts(products) {
  */
 function showProductDetails(product) {
   currentProduct = product;
-  modalImage.src = product.image;
+  modalImage.src = product.image || product.cover;
   modalTitle.textContent = product.title;
-  modalDescription.textContent = product.description;
-  modalPrice.textContent = product.price.toFixed(2);
+  modalDescription.textContent =
+    product.description || "No description available";
+  modalPrice.textContent = product.price ? product.price.toFixed(2) : "N/A";
   modal.style.display = "flex";
 }
 
@@ -95,24 +154,90 @@ closeModal.addEventListener("click", () => {
   modal.style.display = "none";
 });
 
-// Modal Add to Cart event (inside product details)
+// Modal Buy event (inside product details)
 modalAddToCart.addEventListener("click", () => {
-  logEvent("ADD_TO_CART_INSIDE", {
-    product: currentProduct.title,
-    price: currentProduct.price,
-  });
+  logEvent(
+    `BUY`,
+    {
+      product: currentProduct.title,
+      price: currentProduct.price,
+    },
+    currentRoute + " details"
+  );
   alert(`${currentProduct.title} added to cart!`);
 });
 
 /**
- * Fetch and display products
+ * Fetch and display clothes
  */
-function fetchProducts() {
-  fetch(API_URL)
-    .then((response) => response.json())
-    .then((products) => renderProducts(products))
-    .catch((error) => console.error("Error fetching products:", error));
+function fetchProducts(apiUrl) {
+  loadingIndicator.classList.add("loading-visible");
+  productList.style.display = "none";
+  setTimeout(() => {
+    loadingIndicator.style.display = "block";
+    fetch(apiUrl)
+      .then((response) => response.json())
+      .then((products) => {
+        productList.innerHTML = ""; // Clear previous products
+        renderProducts(products);
+        productList.style.display = "grid"; // Show products after loading
+      })
+      .catch((error) => console.error("Error fetching products:", error));
+  }, 500);
 }
 
-// Initialize the app
-fetchProducts();
+/**
+ * Fetch and display books
+ */
+function fetchBooks() {
+  loadingIndicator.classList.add("loading-visible");
+  productList.style.display = "none";
+  setTimeout(() => {
+    loadingIndicator.style.display = "block";
+    fetch(API_BOOKS_URL)
+      .then((response) => response.json())
+      .then((data) => {
+        productList.innerHTML = "";
+        renderProducts(
+          data.works.map((work) => ({
+            title: work.title,
+            description: getRandomDescription(),
+            cover: work.cover_id
+              ? `https://covers.openlibrary.org/b/id/${work.cover_id}-L.jpg`
+              : "",
+            price: getRandomPrice(),
+          }))
+        );
+        productList.style.display = "grid";
+      })
+      .catch((error) => console.error("Error fetching books:", error));
+  }, 500);
+}
+
+/**
+ * Get a random price for books
+ */
+function getRandomPrice() {
+  const minPrice = 5;
+  const maxPrice = 30;
+  return parseFloat(
+    (Math.random() * (maxPrice - minPrice) + minPrice).toFixed(2)
+  );
+}
+
+/**
+ * Get a random description for books
+ */
+function getRandomDescription() {
+  const descriptions = [
+    "An epic tale of adventure and fantasy.",
+    "A mysterious journey that defies logic.",
+    "A gripping fantasy that will captivate your mind.",
+    "A timeless story of love and loss.",
+    "A magical world filled with creatures and surprises.",
+  ];
+  return descriptions[Math.floor(Math.random() * descriptions.length)];
+}
+
+// Initialize the app with clothes by default
+fetchProducts(API_CLOTHES_URL);

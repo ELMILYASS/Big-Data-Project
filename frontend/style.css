@@ -20,6 +20,38 @@ header {
   border-radius: 10px;
   margin-bottom: 20px;
 }
+#loading {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+}
+
+#loading.loading-visible {
+  display: block;
+}
+
+#loading::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 48px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 /* Loading Spinner */
 .loading {
@@ -151,4 +183,27 @@ header {
 
 .close:hover {
   color: #333;
+}
+
+/* Product Section */
+.product-section {
+  margin-bottom: 50px;
+}
+
+.product-section h2 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Book List */
+#book-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Other products section */
+#product-section {
+  margin-top: 50px;
 }
